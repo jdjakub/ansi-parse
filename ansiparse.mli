@@ -14,7 +14,7 @@ module Concrete = struct
 
   type t = Esc of style list | Text of string
 
-  val item : t Angstrom.t
+  val parse : Lwt.input_channel -> t Lwt_stream.t
 end
 
 module Abstract = struct
@@ -30,7 +30,7 @@ module Abstract = struct
                }
   type 'a t = Base of 'a | Styled of style * 'a t list
 
-  val default : style 
-end
+  val default : style
 
-val parse : string -> string Abstract.t
+  val parse : Concrete.t Lwt_stream.t -> 'a t Lwt_stream.t
+end
