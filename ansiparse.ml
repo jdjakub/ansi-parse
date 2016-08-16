@@ -47,24 +47,15 @@ struct
     let escape = csi *> styles <* cst >>| fun stys -> Esc stys
 
     let item = (escape <|> text)
-end
 
-(* Apply the concrete style to the abstract style *)
-let module C = Concrete in
-let module A = Abstract in
-let apply cstyle astyle = match cstyle with
-  | C.Reset     -> A.default
-  | C.Bold      -> { astyle with weight = A.Bold }
-  | C.Faint     -> { astyle with weight = A.Faint }
-  | C.Italic    -> { astyle with italic = true }
-  | C.Underline -> { astyle with underline = true }
-  | C.Blink     -> { astyle with blink = true }
-  | C.Inverse   -> { astyle with reverse = true }
-  | C.Hidden    -> astyle (* Ignore for now... *)
-  | C.Strike    -> { astyle with strike = true }
-  | C.Fore col  -> { astyle with foreground = Some col }
-  | C.Back col  -> { astyle with background = Some col }
-  | Unknown _   -> astyle (* Ignore *)
+    (* parse : Lwt_io.input_channel -> style list Lwt.t *)
+    let open Angstrom_lwt_unix in
+    let parse in_channel =
+      parse (many item) in_channel >>= function
+        | Ok cstyles -> Lwt.return cstyles
+        | Error err -> Lwt.fail_with err
+  end
+end
 
 module Abstract =
 struct
@@ -89,4 +80,27 @@ struct
                 ; foreground = None
                 ; background = None
                 }
+
 end
+
+(* Apply the concrete style to the abstract style *)
+let module C = Concrete
+let module A = Abstract
+
+(* apply_single : C.style -> A.style -> A.style *)
+let apply_single cstyle astyle = match cstyle with
+  | C.Reset     -> A.default
+  | C.Bold      -> { astyle with weight = A.Bold }
+  | C.Faint     -> { astyle with weight = A.Faint }
+  | C.Italic    -> { astyle with italic = true }
+  | C.Underline -> { astyle with underline = true }
+  | C.Blink     -> { astyle with blink = true }
+  | C.Inverse   -> { astyle with reverse = true }
+  | C.Hidden    -> astyle (* Ignore for now... *)
+  | C.Strike    -> { astyle with strike = true }
+  | C.Fore col  -> { astyle with foreground = Some col }
+  | C.Back col  -> { astyle with background = Some col }
+  | Unknown _   -> astyle (* Ignore *)
+
+(* apply_multi : C.style list -> A.style -> A.style *)
+let apply_multi cstyles astyle = List.fold_left (fun x y -> apply_single y x) astyle cstyles

@@ -13,8 +13,6 @@ module Concrete = struct
   *)
 
   type t = Esc of style list | Text of string
-
-  val parse : Lwt.input_channel -> t Lwt_stream.t
 end
 
 module Abstract = struct
@@ -32,5 +30,6 @@ module Abstract = struct
 
   val default : style
 
-  val parse : Concrete.t Lwt_stream.t -> 'a t Lwt_stream.t
 end
+
+val parse : Concrete.t list -> string Abstract.t
