@@ -2,11 +2,11 @@ type color = Black | Red | Green | Yellow | Blue | Magenta | Cyan | White
 
 module Concrete =
 struct
-
-  type style = Reset | Bold | Faint | Italic | Underline | Blink | Inverse | Hidden
+  type style = Bold | Faint | Italic | Underline | Blink | Inverse | Hidden
              | Strike | Fore of color | Back of color | Unknown of int
 
-  type item = Esc of style list | Text of string
+  type item = Esc of style list | Reset | Text of string
+  type t = item
 
   let fmt_of_int = function
     | 0 -> Reset | 1 -> Bold | 2 -> Faint | 3 -> Italic | 4 -> Underline
@@ -23,6 +23,23 @@ struct
     | x when 40 <= x && x <= 47 -> Back (color_of_int (x-40))
     | x                         -> fmt_of_int x
 
+  (* val extract_esc : int list -> style list * int list *)
+  let rec extract_esc = function
+    | 0 :: ints -> ([], ints)
+    | x :: ints -> let styles, rest = extract_esc ints in (style_of_int x :: styles, rest)
+
+  (* val extract_item : int list -> item list * int list *)
+  let extract_item = function
+    | 0 :: ints -> (Reset, ints)
+    | ints      -> let styles, rest = extract_esc ints in (Esc styles, rest)
+
+  (* val items_of_ints : int list -> item list *)
+  let rec items_of_ints ints =
+    let item, ints' = extract_item ints in
+    match ints' with
+      | _ :: _ -> item :: items_of_ints ints'
+      | []     -> []
+
   (* Grammar:
      Item --> Escape | Text
      Escape --> csi Styles? cst
@@ -33,7 +50,7 @@ struct
   let open Angstrom in
     let style = take_while1 (function '0' .. '9' -> true | _ -> false) >>| int_of_string
 
-    let styles = sep_by (char ';') style >>| List.map style_of_int
+    let styles = sep_by (char ';') style
 
     let csi_str = "\x1b["
     let csi = string csi_str
@@ -44,11 +61,11 @@ struct
       | Some _ -> take_till (fun c -> c = csi_str.[0]) >>| fun str -> Text str
       | None   -> fail "End of input"
 
-    let escape = csi *> styles <* cst >>| fun stys -> Esc stys
+    let escape = csi *> styles <* cst >>| items_of_ints
 
     let item = (escape <|> text)
 
-    (* parse : Lwt_io.input_channel -> style list Lwt.t *)
+    (* val parse : Lwt_io.input_channel -> style list Lwt.t *)
     let open Angstrom_lwt_unix in
     let parse in_channel =
       parse (many item) in_channel >>= function
@@ -102,5 +119,12 @@ let apply_single cstyle astyle = match cstyle with
   | C.Back col  -> { astyle with background = Some col }
   | Unknown _   -> astyle (* Ignore *)
 
-(* apply_multi : C.style list -> A.style -> A.style *)
+(* val apply_multi : C.style list -> A.style -> A.style *)
 let apply_multi cstyles astyle = List.fold_left (fun x y -> apply_single y x) astyle cstyles
+
+(* val apply_root : C.item list -> A.t list *)
+let rec apply_root = function
+  | C.Reset :: items -> apply_root items
+  | C.Text str :: items -> A.Base str :: apply_root items
+  | C.Esc styles :: items -> let nodes, items' = branch items in
+                             A.Styled (apply_multi styles A.default, nodes) :: apply_root items'
