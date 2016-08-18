@@ -23,6 +23,8 @@ struct
     | x when 40 <= x && x <= 47 -> Back (color_of_int (x-40))
     | x                         -> fmt_of_int x
 
+  (* Warning: possibly re-inventing the square parser monad here *)
+
   (* val extract_esc : int list -> style list * int list *)
   let rec extract_esc = function
     | 0 :: ints -> ([], ints)
@@ -58,12 +60,12 @@ struct
     let cst = string "m"
 
     let text = peek_char >>= function
-      | Some _ -> take_till (fun c -> c = csi_str.[0]) >>| fun str -> Text str
+      | Some _ -> take_till (fun c -> c = csi_str.[0]) >>| fun str -> [Text str]
       | None   -> fail "End of input"
 
     let escape = csi *> styles <* cst >>| items_of_ints
 
-    let item = (escape <|> text)
+    let item = (escape <|> text) (* : item list parser ; needs flattenning *)
 
     (* val parse : Lwt_io.input_channel -> style list Lwt.t *)
     let open Angstrom_lwt_unix in
@@ -122,9 +124,20 @@ let apply_single cstyle astyle = match cstyle with
 (* val apply_multi : C.style list -> A.style -> A.style *)
 let apply_multi cstyles astyle = List.fold_left (fun x y -> apply_single y x) astyle cstyles
 
-(* val apply_root : C.item list -> A.t list *)
-let rec apply_root = function
-  | C.Reset :: items -> apply_root items
-  | C.Text str :: items -> A.Base str :: apply_root items
+(* Further possibility of reinventing the square parser monad *)
+
+(* val branch : C.t list -> A.t list * C.t list *)
+let rec branch = function
+  | (C.Reset :: _) as items -> ([], items)
+  | x :: items -> let nodes, items' = branch items in
+      match x with
+      | C.Text str -> (A.Base str :: nodes, items')
+      | C.Esc styles -> let nodes', items'' = branch items' in
+                        (A.Styled (styles, nodes) :: nodes', items')
+
+(* val branch_root : C.t list -> A.t list *)
+let rec branch_root = function
+  | C.Reset :: items -> branch_root items
+  | C.Text str :: items -> A.Base str :: branch_root items
   | C.Esc styles :: items -> let nodes, items' = branch items in
-                             A.Styled (apply_multi styles A.default, nodes) :: apply_root items'
+                             A.Styled(styles,nodes) :: branch_root items'
