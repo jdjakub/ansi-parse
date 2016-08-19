@@ -32,4 +32,8 @@ module Abstract = struct
 
 end
 
-val parse : Concrete.t list -> string Abstract.t
+val parse : in_channel -> string Abstract.t
+
+module Html = struct
+  (* functions from string Abstract.t -> Html elements *)
+end

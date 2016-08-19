@@ -67,12 +67,8 @@ struct
 
     let item = (escape <|> text) (* : item list parser ; needs flattenning *)
 
-    (* val parse : Lwt_io.input_channel -> style list Lwt.t *)
-    let open Angstrom_lwt_unix in
-    let parse in_channel =
-      parse (many item) in_channel >>= function
-        | Ok cstyles -> Lwt.return cstyles
-        | Error err -> Lwt.fail_with err
+    let items = many item >>| List.concat (* Done *)
+
   end
 end
 
@@ -141,3 +137,15 @@ let rec branch_root = function
   | C.Text str :: items -> A.Base str :: branch_root items
   | C.Esc styles :: items -> let nodes, items' = branch items in
                              A.Styled(styles,nodes) :: branch_root items'
+
+(* val parse : in_channel -> string Abstract.t *)
+let module Ang = open Angstrom in
+let module B = open Ang.Buffered in
+let parse in_ch =
+  let rec with_state = function
+    | B.Partial k -> with_state @@ k try Ang.(`String (input_line in_ch) with End_of_file -> `Eof)
+    | B.Done (result,_) -> result
+    | B.Fail (ss,s,_) -> A.Base s :: List.map (fun x -> A.Base x) ss (* Cheap ... but it shouldn't fail? XD *)
+  in
+  let items = with_state @@ B.parse C.items in
+  A.Styled (A.default,branch_root items)
