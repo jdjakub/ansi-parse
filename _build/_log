@@ -1,0 +1,17 @@
+### Starting build.
+# Target: ansiparse.ml.depends, tags: { package(angstrom), package(tyxml), extension:ml, file:ansiparse.ml, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package angstrom -package tyxml -modules ansiparse.ml > ansiparse.ml.depends # cached
+# Target: ansiparse.mli.depends, tags: { package(angstrom), package(tyxml), extension:mli, file:ansiparse.mli, ocaml, ocamldep, quiet, traverse }
+ocamlfind ocamldep -package angstrom -package tyxml -modules ansiparse.mli > ansiparse.mli.depends
+# Target: ansiparse.cmi, tags: { package(angstrom), package(tyxml), byte, compile, extension:mli, file:ansiparse.mli, interf, ocaml, quiet, traverse }
+ocamlfind ocamlc -c -package angstrom -package tyxml -o ansiparse.cmi ansiparse.mli
+# Target: ansiparse.cmx, tags: { package(angstrom), package(tyxml), compile, extension:cmx, extension:ml, file:ansiparse.cmx, file:ansiparse.ml, implem, native, ocaml, quiet, traverse }
+ocamlfind ocamlopt -c -package angstrom -package tyxml -o ansiparse.cmx ansiparse.ml
++ ocamlfind ocamlopt -c -package angstrom -package tyxml -o ansiparse.cmx ansiparse.ml
+File "ansiparse.ml", line 130, characters 6-224:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+Reset
+# Target: ansiparse.native, tags: { package(angstrom), package(tyxml), dont_link_with, extension:native, file:ansiparse.native, link, native, ocaml, program, quiet, traverse }
+ocamlfind ocamlopt -linkpkg -package angstrom -package tyxml ansiparse.cmx -o ansiparse.native
+# Compilation successful.

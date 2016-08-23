@@ -1,0 +1,7 @@
+"Rule: ocaml: ml & cmi -> cmx & o (%=ansiparse )": "\165\184q\156\229\190\017\160\199\225H\207\030\216D^"
+"Rule: ocaml dependencies mli (%=ansiparse )": "\192\241\168Vi\215X\234^\026%\202\243\028ES"
+"Rule: ocaml: cmx* & o* -> native (%=ansiparse )": "\194\031B\196\156\214|V\137\249\213\163\254\237\168\237"
+"Rule: ocaml dependencies ml (%=ansiparse )": "\201D\227\149\235\168\005\030\146q|\134\138\241\136\026"
+"Rule: ocaml: mli -> cmi (%=ansiparse )": "\150{\229HU\233$\188\028U\128N\172\182\195\220"
+"Resource: /Users/jdjakub/ansi-parse/ansiparse.ml": "\181\253|U\146\\\196\003\165;\029C\185\218-\b"
+"Resource: /Users/jdjakub/ansi-parse/ansiparse.mli": "\132'\\\129\131@y\140a\1416\244\178\t\132\131"
