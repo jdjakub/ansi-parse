@@ -14,6 +14,8 @@ sig
   *)
 
   type t = Esc of style list | Reset | Text of string
+
+  val parse : input_channel -> t list
 end
 
 module Abstract :
@@ -31,12 +33,13 @@ sig
   type 'a t = Base of 'a | Styled of style * 'a t list
 
   val default : style
-end
 
-val parse : in_channel -> string Abstract.t
+  val parse : Concrete.t list -> string t
+
+end
 
 module Html :
 sig
   (* functions from string Abstract.t -> Html elements *)
-  val of_tree : string Abstract.t -> [< Html_types.span_content_fun > `PCDATA `Span ] Tyxml.Html.elt
+  val of_tree : string Abstract.t -> [> Html_types.pre ] Tyxml.Html.elt
 end
