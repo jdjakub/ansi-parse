@@ -1,1 +1,1 @@
-true: package(angstrom),package(tyxml)
+true: package(angstrom),package(tyxml),package(ppx_deriving.std)

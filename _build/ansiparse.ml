@@ -40,7 +40,7 @@ struct
     let item, ints' = extract_item ints in
     match ints' with
       | _ :: _ -> item :: items_of_ints ints'
-      | []     -> []
+      | []     -> item :: []
 
   (* Grammar:
      Item --> Escape | Text
@@ -66,9 +66,38 @@ struct
 
   let escape = csi *> styles <* cst >>| items_of_ints
 
-  let item = (escape <|> text) (* : t list parser ; needs flattenning *)
+  let item = (escape <|> text) (* : t list parser ; needs flattening *)
 
   let items = many item >>| List.concat (* Done *)
+
+  (* val parse : in_channel -> Concrete.t list *)
+  module B = Buffered
+  let parse in_ch =
+    let rec with_state = function
+      | B.Partial k -> with_state @@ k (try `String (input_line in_ch ^ "\n") with End_of_file -> `Eof)
+      | B.Done (_,result) -> result
+      | B.Fail (_,ss,s) -> Esc [Fore Red] :: Text s :: List.map (fun x -> Text x) ss (* Cheap ... but it shouldn't fail? XD *)
+    in
+    with_state @@ B.parse items
+end
+
+module C = Concrete
+
+module Debug =
+struct
+  open Angstrom
+
+  let str = "\x1b[0m\x1b[1;39m[ INFO ]\x1b[0m Something interesting happened."
+
+  let text = peek_char >>= function
+    | Some _ -> take_till (fun c -> c = C.csi_str.[0]) >>| fun str -> `Shmext str
+    | None   -> fail "End of input"
+
+   let escape = C.csi *> C.styles <* C.cst >>| fun xs -> `Shmints xs
+
+   let item = escape <|> text
+
+   let items = many item
 end
 
 module Abstract =
@@ -95,63 +124,52 @@ struct
                 ; background = None
                 }
 
+  (* Apply the concrete style to the abstract style *)
+
+  (* apply_single : C.style -> A.style -> A.style *)
+  let apply_single cstyle astyle =
+    match cstyle with
+    | C.Bold      -> { astyle with weight = Bold }
+    | C.Faint     -> { astyle with weight = Faint }
+    | C.Italic    -> { astyle with italic = true }
+    | C.Underline -> { astyle with underline = true }
+    | C.Blink     -> { astyle with blink = true }
+    | C.Inverse   -> { astyle with reverse = true }
+    | C.Hidden    -> astyle (* Ignore for now... *)
+    | C.Strike    -> { astyle with strike = true }
+    | C.Fore col  -> { astyle with foreground = Some col }
+    | C.Back col  -> { astyle with background = Some col }
+    | C.Unknown _   -> astyle (* Ignore *)
+
+  (* val apply_multi : C.style list -> A.style -> A.style *)
+  let apply_multi cstyles astyle = List.fold_left (fun x y -> apply_single y x) astyle cstyles
+
+  (* Further possibility of reinventing the square parser monad *)
+
+  (* val branch : C.t list -> A.t list * C.t list *)
+  let rec branch = function
+    | [] -> ([], [])
+    | (C.Reset :: _) as items -> ([], items)
+    | x :: items -> let nodes, items' = branch items in
+        match x with
+        | C.Text str -> (Base str :: nodes, items')
+        | C.Esc styles -> let nodes', items'' = branch items' in
+                          (Styled (apply_multi styles default, nodes) :: nodes', items')
+
+  (* val branch_root : C.t list -> A.t list *)
+  let rec branch_root = function
+    | [] -> []
+    | C.Reset :: items -> branch_root items
+    | C.Text str :: items -> Base str :: branch_root items
+    | C.Esc styles :: items -> let nodes, items' = branch items in
+                               Styled (apply_multi styles default,nodes) :: branch_root items'
+
+  (* val parse : Concrete.t list -> string Abstract.t *)
+  let parse items = Styled (default,branch_root items)
+
 end
 
-(* Apply the concrete style to the abstract style *)
-module C = Concrete
 module A = Abstract
-
-(* apply_single : C.style -> A.style -> A.style *)
-let apply_single cstyle astyle =
-  let open A in
-  match cstyle with
-  | C.Bold      -> { astyle with weight = Bold }
-  | C.Faint     -> { astyle with weight = Faint }
-  | C.Italic    -> { astyle with italic = true }
-  | C.Underline -> { astyle with underline = true }
-  | C.Blink     -> { astyle with blink = true }
-  | C.Inverse   -> { astyle with reverse = true }
-  | C.Hidden    -> astyle (* Ignore for now... *)
-  | C.Strike    -> { astyle with strike = true }
-  | C.Fore col  -> { astyle with foreground = Some col }
-  | C.Back col  -> { astyle with background = Some col }
-  | C.Unknown _   -> astyle (* Ignore *)
-
-(* val apply_multi : C.style list -> A.style -> A.style *)
-let apply_multi cstyles astyle = List.fold_left (fun x y -> apply_single y x) astyle cstyles
-
-(* Further possibility of reinventing the square parser monad *)
-
-(* val branch : C.t list -> A.t list * C.t list *)
-let rec branch = function
-  | [] -> ([], [])
-  | (C.Reset :: _) as items -> ([], items)
-  | x :: items -> let nodes, items' = branch items in
-      match x with
-      | C.Text str -> (A.Base str :: nodes, items')
-      | C.Esc styles -> let nodes', items'' = branch items' in
-                        (A.Styled (apply_multi styles A.default, nodes) :: nodes', items')
-
-(* val branch_root : C.t list -> A.t list *)
-let rec branch_root = function
-  | [] -> []
-  | C.Reset :: items -> branch_root items
-  | C.Text str :: items -> A.Base str :: branch_root items
-  | C.Esc styles :: items -> let nodes, items' = branch items in
-                             A.Styled (apply_multi styles A.default,nodes) :: branch_root items'
-
-module Ang = Angstrom
-module B = Ang.Buffered
-
-(* val parse : in_channel -> string Abstract.t *)
-let parse in_ch =
-  let rec with_state = function
-    | B.Partial k -> with_state @@ k (try `String (input_line in_ch) with End_of_file -> `Eof)
-    | B.Done (_,result) -> result
-    | B.Fail (_,ss,s) -> C.Esc [C.Fore Red] :: C.Text s :: List.map (fun x -> C.Text x) ss (* Cheap ... but it shouldn't fail? XD *)
-  in
-  let items = with_state @@ B.parse C.items in
-  A.Styled (A.default,branch_root items)
 
 let ( ^^^ ) x y = (x && not y) || (y && not x)
 
@@ -174,15 +192,15 @@ module Html = struct
                else if blink     then "text-decoration: blink"
                else if underline then "text-decoration: underline"
                else "" in
-    let css_color = "color: " ^ match if reverse' then background else foreground with | Some c -> string_of_col c | None -> "" in
-    let css_bgcol = "background-color: " ^ match if reverse' then foreground else background with | Some c -> string_of_col c | None -> "" in
+    let css_color = match if reverse' then background else foreground with | Some c -> "color: " ^ string_of_col c | None -> "" in
+    let css_bgcol = match if reverse' then foreground else background with | Some c -> "background-color: " ^ string_of_col c | None -> "" in
     (reverse', String.concat "; " [css_weight; css_style; css_decor; css_color; css_bgcol])
 
-  let of_tree =
+  let of_tree tree =
     let rec per_node reverse = function
       | A.Base (str:string) -> pcdata str
       | A.Styled (style,nodes) -> let reverse', css = css_of_style reverse style in
                                   span ~a:[a_style css] (List.map (per_node reverse') nodes)
-    in per_node false
+    in pre [per_node false tree]
 
 end

@@ -40,7 +40,7 @@ struct
     let item, ints' = extract_item ints in
     match ints' with
       | _ :: _ -> item :: items_of_ints ints'
-      | []     -> []
+      | []     -> item :: []
 
   (* Grammar:
      Item --> Escape | Text
@@ -66,7 +66,7 @@ struct
 
   let escape = csi *> styles <* cst >>| items_of_ints
 
-  let item = (escape <|> text) (* : t list parser ; needs flattenning *)
+  let item = (escape <|> text) (* : t list parser ; needs flattening *)
 
   let items = many item >>| List.concat (* Done *)
 
@@ -74,7 +74,7 @@ struct
   module B = Buffered
   let parse in_ch =
     let rec with_state = function
-      | B.Partial k -> with_state @@ k (try `String (input_line in_ch) with End_of_file -> `Eof)
+      | B.Partial k -> with_state @@ k (try `String (input_line in_ch ^ "\n") with End_of_file -> `Eof)
       | B.Done (_,result) -> result
       | B.Fail (_,ss,s) -> Esc [Fore Red] :: Text s :: List.map (fun x -> Text x) ss (* Cheap ... but it shouldn't fail? XD *)
     in
@@ -82,6 +82,23 @@ struct
 end
 
 module C = Concrete
+
+module Debug =
+struct
+  open Angstrom
+
+  let str = "\x1b[0m\x1b[1;39m[ INFO ]\x1b[0m Something interesting happened."
+
+  let text = peek_char >>= function
+    | Some _ -> take_till (fun c -> c = C.csi_str.[0]) >>| fun str -> `Shmext str
+    | None   -> fail "End of input"
+
+   let escape = C.csi *> C.styles <* C.cst >>| fun xs -> `Shmints xs
+
+   let item = escape <|> text
+
+   let items = many item
+end
 
 module Abstract =
 struct
