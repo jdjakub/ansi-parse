@@ -7,4 +7,6 @@ homepage: ""
 bug-reports: ""
 license: ""
 build: []
-install:
+install: []
+remove: []
+depends: "ocamlfind" {build}
