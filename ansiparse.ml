@@ -79,6 +79,10 @@ struct
       | B.Fail (_,ss,s) -> Esc [Fore Red] :: Text s :: List.map (fun x -> Text x) ss (* Cheap ... but it shouldn't fail? XD *)
     in
     with_state @@ B.parse items
+
+  let parse_str str =  match parse_only items (`String str) with
+    | Ok result -> result
+    | Error err -> [Esc [Fore Red]; Text err]
 end
 
 module C = Concrete

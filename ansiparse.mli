@@ -16,6 +16,7 @@ sig
   type t = Esc of style list | Reset | Text of string
 
   val parse : in_channel -> t list
+  val parse_str : string -> t list
 end
 
 module Abstract :
