@@ -8,8 +8,6 @@ homepage: "https://github.com/jdjakub/ansiparse"
 bug-reports: "..."
 build: [ "ocaml" "pkg/pkg.ml" "build"
   "--pinned" pinned ]
-install: []
-remove: []
 depends: [
   "ocamlfind" {build}
   "ocamlbuild" {build}

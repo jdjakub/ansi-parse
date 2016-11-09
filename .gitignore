@@ -1,1 +1,11 @@
 _build
+_tests
+tmp
+*~
+\.\#*
+\#*#
+.*.swp
+*.install
+*.native
+*.byte
+.DS_Store
