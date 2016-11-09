@@ -4,5 +4,5 @@
 open Topkg
 
 let () =
-  Pkg.describe "ansiparse" @@ fun c ->
+  Pkg.describe "ansi-parse" @@ fun c ->
   Ok [ Pkg.mllib "ansiparse.mllib" ]
