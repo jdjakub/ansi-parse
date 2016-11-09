@@ -1,6 +1,5 @@
 opam-version: "1.2"
 name: "ansi-parse"
-version: "1.0"
 license: "ISC"
 maintainer: "Joel Jakubovic"
 authors: "Joel Jakubovic"
