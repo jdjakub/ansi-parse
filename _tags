@@ -1,1 +1,2 @@
 true: package(angstrom),package(tyxml),package(ppx_deriving.std)
+true: bin_annot
