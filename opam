@@ -6,10 +6,13 @@ maintainer: "Joel Jakubovic"
 authors: "Joel Jakubovic"
 dev-repo: "https://github.com/jdjakub/ansi-parse.git"
 homepage: "https://github.com/jdjakub/ansiparse"
-bug-reports: "..."
+bug-reports: "https://github.com/jdjakub/ansiparse/issues"
 build: [ "ocaml" "pkg/pkg.ml" "build"
   "--pinned" pinned ]
 depends: [
   "ocamlfind" {build}
   "ocamlbuild" {build}
-  "topkg" {build} ]
+  "topkg" {build} 
+  "angstrom"
+  "ppx_deriving" {build}
+  "tyxml" ]
