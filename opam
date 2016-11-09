@@ -15,3 +15,4 @@ depends: [
   "angstrom"
   "ppx_deriving" {build}
   "tyxml" ]
+doc: "https://jdjakub.github.io/ansi-parse/doc"
