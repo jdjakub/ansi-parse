@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Ansiparse.Concrete.html">
+<link rel="next" href="Ansiparse.Html.html">
+<link rel="Up" href="Ansiparse.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Ansiparse" rel="Chapter" href="Ansiparse.html"><title>Ansiparse.Abstract</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Ansiparse.Concrete.html" title="Ansiparse.Concrete">Previous</a>
+&nbsp;<a class="up" href="Ansiparse.html" title="Ansiparse">Up</a>
+&nbsp;<a class="post" href="Ansiparse.Html.html" title="Ansiparse.Html">Next</a>
+</div>
+<h1>Module <a href="type_Ansiparse.Abstract.html">Ansiparse.Abstract</a></h1>
+
+<pre><span class="keyword">module</span> Abstract: <code class="code"><span class="keyword">sig</span></code> <a href="Ansiparse.Abstract.html">..</a> <code class="code"><span class="keyword">end</span></code></pre><div class="info module top">
+This module translates concrete item lists into an abstract tree structure.<br>
+</div>
+<hr width="100%">
+
+<pre><code><span id="TYPEweight"><span class="keyword">type</span> <code class="type"></code>weight</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTweight.Normal"><span class="constructor">Normal</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTweight.Bold"><span class="constructor">Bold</span></span></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTweight.Faint"><span class="constructor">Faint</span></span></code></td>
+
+</tr></table>
+
+
+
+<pre><code><span id="TYPEstyle"><span class="keyword">type</span> <code class="type"></code>style</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.weight">weight</span>&nbsp;: <code class="type"><a href="Ansiparse.Abstract.html#TYPEweight">weight</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.italic">italic</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.underline">underline</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.blink">blink</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.reverse">reverse</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.strike">strike</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.foreground">foreground</span>&nbsp;: <code class="type"><a href="Ansiparse.html#TYPEcolor">Ansiparse.color</a> option</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTstyle.background">background</span>&nbsp;: <code class="type"><a href="Ansiparse.html#TYPEcolor">Ansiparse.color</a> option</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type">'a</code> t</span> = </code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.Base"><span class="constructor">Base</span></span> <span class="keyword">of</span> <code class="type">'a</code></code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.Styled"><span class="constructor">Styled</span></span> <span class="keyword">of</span> <code class="type"><a href="Ansiparse.Abstract.html#TYPEstyle">style</a> * 'a <a href="Ansiparse.Abstract.html#TYPEt">t</a> list</code></code></td>
+
+</tr></table>
+
+
+<br>
+Styles are applied to <code class="code"><span class="keywordsign">'</span>a</code>s or further subtrees.<br>
+
+<pre><span id="VALdefault"><span class="keyword">val</span> default</span> : <code class="type"><a href="Ansiparse.Abstract.html#TYPEstyle">style</a></code></pre><div class="info ">
+The style of the root of the structure; gives plain text<br>
+</div>
+
+<pre><span id="VALparse"><span class="keyword">val</span> parse</span> : <code class="type"><a href="Ansiparse.Concrete.html#TYPEt">Ansiparse.Concrete.t</a> list -> string <a href="Ansiparse.Abstract.html#TYPEt">t</a></code></pre><div class="info ">
+Converts item lists into trees of styled text. Styles applied to strings will nest until a <code class="code"><span class="constructor">Reset</span></code> is encountered, after which a new branch from the root is begun.<br>
+</div>
+</body></html>
