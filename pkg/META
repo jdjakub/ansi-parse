@@ -1,6 +1,6 @@
 description = "Parse ANSI terminal codes into HTML"
 version = "1.0"
-requires = ""
+requires = "angstrom tyxml"
 archive(byte) = "ansiparse.cma"
 archive(native) = "ansiparse.cmxa"
 plugin(byte) = "ansiparse.cma"
