@@ -3,8 +3,8 @@ license: "ISC"
 maintainer: "Joel Jakubovic"
 authors: "Joel Jakubovic"
 dev-repo: "https://github.com/jdjakub/ansi-parse.git"
-homepage: "https://github.com/jdjakub/ansiparse"
-bug-reports: "https://github.com/jdjakub/ansiparse/issues"
+homepage: "https://github.com/jdjakub/ansi-parse"
+bug-reports: "https://github.com/jdjakub/ansi-parse/issues"
 build: [ "ocaml" "pkg/pkg.ml" "build"
   "--pinned" pinned ]
 depends: [
