@@ -26,6 +26,12 @@ sig
 
   (** Analogous to [parse]. *)
   val parse_str : string -> t list
+
+  (** For internal use only. *)
+  module Private : sig
+    val text : t list Angstrom.t
+    val items : t list Angstrom.t
+  end
 end
 
 (**

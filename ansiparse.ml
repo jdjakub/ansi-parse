@@ -60,15 +60,17 @@ struct
 
   let cst = string "m"
 
-  let text = peek_char >>= function
+  module Private = struct
+    let text = peek_char >>= function
     | Some _ -> take_till (fun c -> c = csi_str.[0]) >>| fun str -> [Text str]
     | None   -> fail "End of input"
 
-  let escape = csi *> styles <* cst >>| items_of_ints
+    let escape = csi *> styles <* cst >>| items_of_ints
 
-  let item = (escape <|> text) (* : t list parser ; needs flattening *)
+    let item = (escape <|> text) (* : t list parser ; needs flattening *)
 
-  let items = many item >>| List.concat (* Done *)
+    let items = many item >>| List.concat (* Done *)
+  end
 
   (* val parse : in_channel -> Concrete.t list *)
   module B = Buffered
@@ -78,9 +80,9 @@ struct
       | B.Done (_,result) -> result
       | B.Fail (_,ss,s) -> Esc [Fore Red] :: Text s :: List.map (fun x -> Text x) ss (* Cheap ... but it shouldn't fail? XD *)
     in
-    with_state @@ B.parse items
+    with_state @@ B.parse Private.items
 
-  let parse_str str =  match parse_only items (`String str) with
+  let parse_str str =  match parse_string ~consume:Consume.All Private.items str with
     | Ok result -> result
     | Error err -> [Esc [Fore Red]; Text err]
 end
@@ -157,8 +159,9 @@ struct
     | x :: items -> let nodes, items' = branch items in
         match x with
         | C.Text str -> (Base str :: nodes, items')
-        | C.Esc styles -> let nodes', items'' = branch items' in
+        | C.Esc styles -> let nodes', _items'' = branch items' in
                           (Styled (apply_multi styles default, nodes) :: nodes', items')
+        | C.Reset -> (nodes, items')
 
   (* val branch_root : C.t list -> A.t list *)
   let rec branch_root = function
@@ -202,7 +205,7 @@ module Html = struct
 
   let of_tree tree =
     let rec per_node reverse = function
-      | A.Base (str:string) -> pcdata str
+      | A.Base (str:string) -> txt str
       | A.Styled (style,nodes) -> let reverse', css = css_of_style reverse style in
                                   span ~a:[a_style css] (List.map (per_node reverse') nodes)
     in pre [per_node false tree]

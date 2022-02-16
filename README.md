@@ -1,6 +1,6 @@
 Ansiparse - Escape sequences to HTML
 -------------------------------------------
-%%1.0.2%%
+%%0.4.0%%
 
 Ansiparse is a library for converting raw terminal output,
 replete with escape codes, into formatted HTML.
@@ -34,10 +34,21 @@ If you installed ansi-parse with `opam` sample programs are located in
 the directory `opam config var ansi-parse:doc`.
 
 In the distribution sample programs and tests are located in the
-[`test`](test) directory of the distribution. They can be built with:
+main and [`driver`](driver) directories of the distribution. They can be
+built and run with:
 
-    ocamlbuild -use-ocamlfind test/tests.otarget
+    OCAMLRUNPARAM=b dune build -p ansi-parse @runtest
 
-The resulting binaries are in `_build/test`.
+The resulting binaries are:
 
-- `test.native` tests the library, nothing should fail.
+- `_build/default/test3.exe`
+- `_build/default/driver/driver.exe`
+
+## Local Development
+
+Build, test and pin your locally checked out repository with:
+
+    opam install . --verbose --with-test --with-doc
+
+Your changes, if any, must be `git commit`-ed for opam install to see
+your changes.

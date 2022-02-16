@@ -1,0 +1,7 @@
+(tests
+ (names driver)
+ (libraries ansiparse))
+
+; For drver.t
+(cram
+ (deps ../test.txt ./driver.exe))
